@@ -1,8 +1,14 @@
+use crate::constants::board::{HORIZONTAL, VERTICAL};
+use crate::entities::cell::Cell;
+use crate::entities::color::Color;
 use crate::entities::figure::{Figure, FigureName};
 use crate::entities::game::Game;
 
 #[derive(Debug, Clone)]
 pub enum PointDtoType {
+    Frame,
+    Player,
+    Timer,
     Figure(Figure),
     Cell,
 }
@@ -29,121 +35,34 @@ impl GameController {
         Self { game }
     }
 
-    pub fn get_state(&self) -> [[PointDto; 8]; 8] {
-        let cell = PointDto {
-            state_type: PointDtoType::Cell,
-        };
-        let pawn = PointDto {
-            state_type: PointDtoType::Figure(Figure::new(FigureName::Pawn)),
-        };
-        let rook = PointDto {
-            state_type: PointDtoType::Figure(Figure::new(FigureName::Rook)),
-        };
-        let knight = PointDto {
-            state_type: PointDtoType::Figure(Figure::new(FigureName::Knight)),
-        };
-        let bishop = PointDto {
-            state_type: PointDtoType::Figure(Figure::new(FigureName::Bishop)),
-        };
-        let queen = PointDto {
-            state_type: PointDtoType::Figure(Figure::new(FigureName::Queen)),
-        };
-        let king = PointDto {
-            state_type: PointDtoType::Figure(Figure::new(FigureName::King)),
-        };
-        let state = [
-            [
-                rook.clone(),
-                knight.clone(),
-                bishop.clone(),
-                queen.clone(),
-                king.clone(),
-                bishop.clone(),
-                knight.clone(),
-                rook.clone(),
-            ],
-            [
-                pawn.clone(),
-                pawn.clone(),
-                pawn.clone(),
-                pawn.clone(),
-                pawn.clone(),
-                pawn.clone(),
-                pawn.clone(),
-                pawn.clone(),
-            ],
-            [
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-            ],
-            [
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-            ],
-            [
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-            ],
-            [
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-                cell.clone(),
-            ],
-            [
-                pawn.clone(),
-                pawn.clone(),
-                pawn.clone(),
-                pawn.clone(),
-                pawn.clone(),
-                pawn.clone(),
-                pawn.clone(),
-                pawn.clone(),
-            ],
-            [
-                rook.clone(),
-                knight.clone(),
-                bishop.clone(),
-                queen.clone(),
-                king.clone(),
-                bishop.clone(),
-                knight.clone(),
-                rook.clone(),
-            ],
-        ];
+    pub fn get_state(&self) -> Vec<Vec<&Cell>> {
+        let mut state = Vec::new();
 
+        for idx in VERTICAL.iter() {
+            let mut v = Vec::new();
+            for char in HORIZONTAL.iter() {
+                let key = format!("{}{}", char, 9 - idx);
+                if let Some(cell) = self.game.board.grid.get(&key) {
+                    v.push(cell)
+                }
+            }
+            state.push(v);
+        }
         state
     }
 
-    //Обновляем состояние игры
+    pub fn move_figure(mut self, selected_figure: String, selected_cell: String) -> Self {
+        if Cell::is_correct_name(&selected_figure) && Cell::is_correct_name(&selected_cell) {
+            self.game.move_figure(selected_figure, selected_cell);
+            self
+        } else {
+            self
+        }
+    }
+
     pub fn update(mut self) -> Self {
-        // let game = self.game.clone();
-        // self.game  = match ХОД ИГРОКА ЗАКОНЧИЛСЯ {
-        //     None => game,
-        //     Some(d) => game.handle_input(d)
-        // }
+        let game = self.game.update();
+        self.game = game;
         self
     }
 }
